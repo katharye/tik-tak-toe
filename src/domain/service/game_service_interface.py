@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from domain.model import Game, Board
+from domain.model import Game, Side
 
 class GameServiceABC(ABC):
 
@@ -14,6 +14,6 @@ class GameServiceABC(ABC):
         ...
 
     @abstractmethod
-    def check_game_finish(self, game: Game) -> tuple[bool, str | None]:
-        """Возвращает (is_over, winner_symbol), где winner_symbol: 'X', 'O', 'Draw' или None."""
+    def check_game_finish(self, game: Game) -> tuple[bool, Side | None]:
+        """Возвращает (is_over, winner), где winner: Player, Machine, Draw или None."""
         ...
