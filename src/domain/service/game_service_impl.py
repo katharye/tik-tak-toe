@@ -1,5 +1,5 @@
 from domain.service.game_service_interface import GameServiceABC
-from domain.model import Game
+from domain.model import Game, Side
 
 from domain.interfaces import IGameRepository, IBotStrategy 
 
@@ -12,7 +12,7 @@ class GameService(GameServiceABC):
     @staticmethod
     def validate_field(new_game: Game, old_game: Game | None = None) -> bool:
         if old_game is None:
-            player_steps = sum(row.count(0) for row in new_game.board.values)
+            player_steps = sum(row.count(Side.PLAYER) for row in new_game.board.values)
             return player_steps in (8, 9)
 
         steps = 0
@@ -21,7 +21,7 @@ class GameService(GameServiceABC):
                 old_val = old_game.board[i][j]
                 new_val = new_game.board[i][j]
 
-                if old_val != new_val and old_val != 0:
+                if old_val != new_val and old_val != Side.CLEAR:
                     return False
 
                 if old_val != new_val:
@@ -30,7 +30,7 @@ class GameService(GameServiceABC):
         return steps == 1
 
     @staticmethod
-    def check_game_finish(game: Game) -> tuple[bool, str | None]:
+    def check_game_finish(game: Game) -> tuple[bool, int | None]:
         lines = []
         board = game.board
 
@@ -42,13 +42,13 @@ class GameService(GameServiceABC):
         lines.append((board[0][2], board[1][1], board[2][0]))
 
         for line in lines:
-            if abs(sum(line)) == 3 and 0 not in line:
-                winner = 'X' if 1 in line else 'O'
+            if abs(sum(line)) == 3 and Side.CLEAR not in line:
+                winner = line[0]
                 return (True, winner)
 
-        has_empty_cells = any(0 in row for row in board.values)
+        has_empty_cells = any(Side.CLEAR in row for row in board.values)
         if not has_empty_cells:
-            return (True, "Draw")
+            return (True, Side.CLEAR)
 
         return (False, None) 
 
