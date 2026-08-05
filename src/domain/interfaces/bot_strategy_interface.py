@@ -1,0 +1,10 @@
+from abc import ABC, abstractmethod
+from domain.model import Game
+
+
+class IBotStrategy(ABC):
+
+    @abstractmethod
+    def get_next_move(self, game: Game) -> tuple[int, int]:
+        """Возвращает координаты следующего хода (row, col)."""
+        pass

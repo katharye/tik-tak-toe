@@ -1,0 +1,2 @@
+from domain.interfaces.game_repository_interface import IGameRepository
+from domain.interfaces.bot_strategy_interface import IBotStrategy
