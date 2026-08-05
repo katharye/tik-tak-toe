@@ -4,7 +4,7 @@ from domain.model import Game, Board
 class GameServiceABC(ABC):
 
     @abstractmethod
-    def get_next_move(self, game: Game) -> tuple[int, int]:
+    def get_next_move(self, game: Game) -> tuple[int, int] | None:
         """Возвращает координаты (row, col) следующего хода ИИ (Minimax)."""
         ...
 

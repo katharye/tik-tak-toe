@@ -51,7 +51,7 @@ class GameService(GameServiceABC):
 
         return (False, None) 
 
-    def get_next_move(self, game: Game) -> tuple[int, int]:
+    def get_next_move(self, game: Game) -> tuple[int, int] | None:
         if not self.bot_strategy:
             raise ValueError("Для этого режима игры не задана стратегия бота.")
         return self.bot_strategy.get_next_move(game=game)
