@@ -1,6 +1,4 @@
-from enum import Enum, auto
-
-class Side(Enum):
-    PLAYER = auto()
-    MACHINE = auto()
-    DRAW = auto()
+class Side:
+    PLAYER = 1
+    MACHINE = -1
+    CLEAR = 0
