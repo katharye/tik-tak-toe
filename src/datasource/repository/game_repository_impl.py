@@ -1,8 +1,7 @@
-from datasource.repository.game_repository_interface import IGameRepository
 from datasource.repository.in_memory_storage import InMemoryStorage
 from datasource.mapper import DatasourceMapper
 
-from domain import Game
+from domain import Game, IGameRepository
 
 from uuid import UUID
 

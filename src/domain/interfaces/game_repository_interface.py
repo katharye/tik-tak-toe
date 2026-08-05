@@ -1,4 +1,4 @@
-from domain import Game
+from domain.model import Game
 
 from abc import ABC, abstractmethod
 from uuid import UUID
