@@ -1,5 +1,5 @@
 from domain.service.game_service_interface import GameServiceABC
-from domain.model import Game, Side
+from domain.model import Game, Board, Side
 
 from domain.interfaces import IGameRepository, IBotStrategy 
 
@@ -30,9 +30,8 @@ class GameService(GameServiceABC):
         return steps == 1
 
     @staticmethod
-    def check_game_finish(game: Game) -> tuple[bool, int | None]:
+    def check_game_finish(board: Board) -> tuple[bool, int | None]:
         lines = []
-        board = game.board
 
         for i in range(3):
             lines.append((board[i][0], board[i][1], board[i][2]))
