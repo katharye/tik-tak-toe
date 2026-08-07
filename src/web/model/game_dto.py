@@ -1,3 +1,4 @@
+# web/model/game_dto.py
 from typing import Self, Optional
 from dataclasses import dataclass
 
