@@ -5,7 +5,7 @@ from domain.model import Game, Board, Side
 from domain.interfaces import IGameRepository, IBotStrategy 
 
 class GameService(GameServiceABC):
-    def __init__(self, repository: IGameRepository, bot_strategy: IBotStrategy | None = None):
+    def __init__(self, repository: IGameRepository, bot_strategy: IBotStrategy):
         self.repository = repository
         self.bot_strategy = bot_strategy
 
@@ -27,6 +27,8 @@ class GameService(GameServiceABC):
                     return False
 
                 if old_val != new_val:
+                    if new_val != Side.PLAYER:  
+                      return False
                     steps += 1
                 
         return steps == 1
