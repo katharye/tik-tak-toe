@@ -6,6 +6,6 @@ from domain.model import Game
 class IBotStrategy(ABC):
 
     @abstractmethod
-    def get_next_move(self, game: Game) -> tuple[int, int]:
+    def get_next_move(self, game: Game) -> tuple[int, int] | None:
         """Возвращает координаты следующего хода (row, col)."""
         pass

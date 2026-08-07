@@ -5,16 +5,15 @@ from domain.model import Game, Board, Side
 from domain.interfaces import IGameRepository, IBotStrategy 
 
 class GameService(GameServiceABC):
-    def __init__(self, repository: IGameRepository, bot_strategy: IBotStrategy | None):
-        super().__init__()
+    def __init__(self, repository: IGameRepository, bot_strategy: IBotStrategy | None = None):
         self.repository = repository
         self.bot_strategy = bot_strategy
 
-    @staticmethod
-    def validate_field(new_game: Game, old_game: Game | None = None) -> bool:
+    def validate_field(self, game: Game) -> bool:
+        old_game = self.repository.get(game_id=game.uuid) 
         if old_game is None:
-            player_steps = sum(row.count(Side.PLAYER) for row in new_game.board.values)
-            machine_steps = sum(row.count(Side.MACHINE) for row in new_game.board.values)
+            player_steps = sum(row.count(Side.PLAYER) for row in game.board.values)
+            machine_steps = sum(row.count(Side.MACHINE) for row in game.board.values)
             # Новая игра: либо пустое поле, либо один ход игрока
             return machine_steps == 0 and player_steps in (0, 1)
 
@@ -22,7 +21,7 @@ class GameService(GameServiceABC):
         for i in range(3):
             for j in range(3):
                 old_val = old_game.board[i][j]
-                new_val = new_game.board[i][j]
+                new_val = game.board[i][j]
 
                 if old_val != new_val and old_val != Side.CLEAR:
                     return False
@@ -54,7 +53,15 @@ class GameService(GameServiceABC):
 
         return (False, None) 
 
-    def get_next_move(self, game: Game) -> tuple[int, int] | None:
+    def get_next_move(self, game: Game) -> Game:
         if not self.bot_strategy:
             raise ValueError("Для этого режима игры не задана стратегия бота.")
-        return self.bot_strategy.get_next_move(game=game)
+        next_step = self.bot_strategy.get_next_move(game=game)
+        if next_step is None:
+            return game
+        row, col = next_step
+        next_step_game = game.copy()
+        next_step_game.board[row][col] = Side.MACHINE
+
+        self.repository.save(next_step_game)
+        return next_step_game

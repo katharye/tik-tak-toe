@@ -5,13 +5,12 @@ from domain.model import Game, Board
 class GameServiceABC(ABC):
 
     @abstractmethod
-    def get_next_move(self, game: Game) -> tuple[int, int] | None:
+    def get_next_move(self, game: Game) -> Game:
         """Возвращает координаты (row, col) следующего хода ИИ (Minimax)."""
         ...
 
-    @staticmethod
     @abstractmethod
-    def validate_field(new_game: Game, old_game: Game | None = None) -> bool:
+    def validate_field(new_game: Game) -> bool:
         """Проверяет валидность ходов (что не переписаны прошлые ходы и сделан ровно 1 ход)."""
         ...
 

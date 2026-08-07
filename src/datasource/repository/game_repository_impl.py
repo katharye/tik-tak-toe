@@ -7,9 +7,9 @@ from domain import Game, IGameRepository
 from uuid import UUID
 
 class GameRepository(IGameRepository):
-    def __init__(self, storage: InMemoryStorage | None = None):
+    def __init__(self, storage: InMemoryStorage):
         super().__init__()
-        self.storage = storage if storage is not None else InMemoryStorage() 
+        self.storage = storage 
 
     def save(self, game: Game) -> None:
         entity = DatasourceMapper.to_data(game)
