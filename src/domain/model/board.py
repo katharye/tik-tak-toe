@@ -1,3 +1,4 @@
+# domain/model/board.py
 from __future__ import annotations
 
 class Board:
@@ -14,7 +15,7 @@ class Board:
                 self.values = validated_board
                 return
     
-        self.values = [[-1, -1, -1] for _ in range(3)]
+        self.values = [[0, 0, 0] for _ in range(3)]
 
     def copy(self) -> Board:
         new = Board.__new__(Board)

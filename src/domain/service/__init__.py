@@ -1,3 +1,4 @@
+# domain/service/__init__.py
 from domain.service.game_service_impl import GameService
 from domain.service.game_service_interface import GameServiceABC
 from domain.service.bot import BotStrategy_MinMax

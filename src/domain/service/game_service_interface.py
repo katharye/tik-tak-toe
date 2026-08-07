@@ -1,3 +1,4 @@
+# domain/service/game_service_interface.py
 from abc import ABC, abstractmethod
 from domain.model import Game, Board
 

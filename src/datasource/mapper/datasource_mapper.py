@@ -1,3 +1,5 @@
+# datasource/mapper/datasource_mapper.py
+
 from uuid import UUID
 from datasource.model import GameEntity, BoardEntity
 from domain import Game, Board
@@ -7,10 +9,10 @@ class DatasourceMapper:
     @classmethod
     def to_domain(cls, entity: GameEntity | BoardEntity) -> Game | Board:
         if isinstance(entity, GameEntity):
-            game = Game.__new__(Game)
-            game.board = cls.to_domain(entity.board)
-            game.uuid = UUID(entity.game_id)
-            return game
+            return Game(
+                game_id=UUID(entity.game_id), 
+                board=cls.to_domain(entity.board)
+            )
 
         if isinstance(entity, BoardEntity):
             return Board(entity.matrix)

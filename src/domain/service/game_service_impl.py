@@ -1,3 +1,4 @@
+# domain/service/game_service_impl.py
 from domain.service.game_service_interface import GameServiceABC
 from domain.model import Game, Board, Side
 
@@ -13,7 +14,9 @@ class GameService(GameServiceABC):
     def validate_field(new_game: Game, old_game: Game | None = None) -> bool:
         if old_game is None:
             player_steps = sum(row.count(Side.PLAYER) for row in new_game.board.values)
-            return player_steps in (8, 9)
+            machine_steps = sum(row.count(Side.MACHINE) for row in new_game.board.values)
+            # Новая игра: либо пустое поле, либо один ход игрока
+            return machine_steps == 0 and player_steps in (0, 1)
 
         steps = 0
         for i in range(3):

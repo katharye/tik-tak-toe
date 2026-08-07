@@ -1,3 +1,4 @@
+# datasource/model/board.py
 from dataclasses import dataclass
 
 @dataclass

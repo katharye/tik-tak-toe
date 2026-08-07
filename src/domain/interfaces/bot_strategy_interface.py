@@ -1,3 +1,4 @@
+# domain/interfaces/bot_strategy_interface.py
 from abc import ABC, abstractmethod
 from domain.model import Game
 

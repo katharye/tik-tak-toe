@@ -1,7 +1,7 @@
+# domain/service/bot/minimax_bot_strategy.py
 from domain.interfaces import IBotStrategy
 from domain.model import Game, Board, Side
 
-from domain.service.game_service_impl import GameService
 
 from dataclasses import dataclass
 
@@ -14,6 +14,7 @@ class MinimaxScores:
 
 class BotStrategy_MinMax(IBotStrategy):
     def _minimax(self, board: Board, depth: int, bot_turn: bool) -> int:
+        from domain.service.game_service_impl import GameService
         win, winner = GameService.check_game_finish(board)
         if win:
             match winner:

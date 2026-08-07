@@ -1,3 +1,4 @@
+# domain/interfaces/game_repository_interface.py
 from domain.model import Game
 
 from abc import ABC, abstractmethod

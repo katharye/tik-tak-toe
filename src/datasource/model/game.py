@@ -1,3 +1,4 @@
+# datasource/model/game.py
 from dataclasses import dataclass
 
 from datasource.model.board import BoardEntity
