@@ -1,5 +1,5 @@
 # datasource/repository/game_repository_impl.py
-from datasource.repository.in_memory_storage import InMemoryStorage
+from datasource.repository.in_memory.in_memory_storage import InMemoryStorage
 from datasource.mapper import DatasourceMapper
 
 from domain import Game, IGameRepository
