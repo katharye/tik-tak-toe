@@ -87,13 +87,13 @@ class Container:
 
 def configure_container(container: Container) -> None:
     from datasource import InMemoryStorage
-    from datasource import GameRepository
+    from datasource import InMemoryGameRepository
     from domain import GameService
     from domain import BotStrategy_MinMax
     from domain import IGameRepository, IBotStrategy
     from domain import GameServiceABC
 
     container.register(InMemoryStorage, scope=Scope.SINGLETON)
-    container.register(IGameRepository, GameRepository, scope=Scope.SINGLETON)
+    container.register(IGameRepository, InMemoryGameRepository, scope=Scope.SINGLETON)
     container.register(IBotStrategy, BotStrategy_MinMax, scope=Scope.SINGLETON)
     container.register(GameServiceABC, GameService, scope=Scope.SINGLETON)

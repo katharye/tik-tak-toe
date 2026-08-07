@@ -1,2 +1,2 @@
 # datasource/__init__.py
-from .repository import GameRepository, InMemoryStorage
+from .repository import InMemoryGameRepository, InMemoryStorage

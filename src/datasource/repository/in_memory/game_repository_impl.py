@@ -6,7 +6,7 @@ from domain import Game, IGameRepository
 
 from uuid import UUID
 
-class GameRepository(IGameRepository):
+class InMemoryGameRepository(IGameRepository):
     def __init__(self, storage: InMemoryStorage):
         super().__init__()
         self.storage = storage 
