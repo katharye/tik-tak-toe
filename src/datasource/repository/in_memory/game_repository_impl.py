@@ -1,6 +1,6 @@
 # datasource/repository/game_repository_impl.py
 from datasource.repository.in_memory.in_memory_storage import InMemoryStorage
-from datasource.mapper import DatasourceMapper
+from datasource.mapper import DatasourceInMemoryMapper
 
 from domain import Game, IGameRepository
 
@@ -12,7 +12,7 @@ class InMemoryGameRepository(IGameRepository):
         self.storage = storage 
 
     def save(self, game: Game) -> None:
-        entity = DatasourceMapper.to_data(game)
+        entity = DatasourceInMemoryMapper.to_data(game)
         self.storage.add(entity)
         
 
@@ -21,6 +21,6 @@ class InMemoryGameRepository(IGameRepository):
 
         entity = self.storage.get(game_id)
         if entity is not None:
-            return DatasourceMapper.to_domain(entity)
+            return DatasourceInMemoryMapper.to_domain(entity)
 
         return None

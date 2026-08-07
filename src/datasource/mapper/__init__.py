@@ -1,2 +1,2 @@
 # datasource/mapper/__init__.py
-from datasource.mapper.datasource_mapper import DatasourceMapper
+from datasource.mapper.datasource_in_memory_mapper import DatasourceInMemoryMapper

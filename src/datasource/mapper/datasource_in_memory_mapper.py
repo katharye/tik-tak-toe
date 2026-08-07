@@ -4,7 +4,7 @@ from uuid import UUID
 from datasource.model import GameEntity, BoardEntity
 from domain import Game, Board
 
-class DatasourceMapper:
+class DatasourceInMemoryMapper:
 
     @classmethod
     def to_domain(cls, entity: GameEntity | BoardEntity) -> Game | Board:
