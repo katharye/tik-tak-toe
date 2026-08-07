@@ -1,1 +1,1 @@
-from .in_memory import InMemoryGameRepository, InMemoryStorage
+from .game_repository_impl import GameRepository
