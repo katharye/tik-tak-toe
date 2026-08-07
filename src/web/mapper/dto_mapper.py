@@ -1,3 +1,4 @@
+# web/mapper/dto_mapper.py
 from domain import Game, Board
 from web.model import GameDTO, BoardDTO
 
@@ -40,8 +41,8 @@ class WebMapper:
     def to_domain(cls, web: GameDTO | BoardDTO) -> Game | Board:
         if isinstance(web, GameDTO):
             return Game(
-                UUID(web.game_id),
-                cls.to_domain(web.board)
+                game_id=UUID(web.game_id),
+                board=cls.to_domain(web.board)
             )   
         if isinstance(web, BoardDTO):
             return Board(
