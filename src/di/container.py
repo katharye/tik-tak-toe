@@ -1,4 +1,7 @@
 # di/container.py
+
+from sqlalchemy.orm import Session 
+
 from typing import Callable, TypeVar
 import inspect 
 T = TypeVar("T")
@@ -55,21 +58,40 @@ class Container:
 
             bound_args = sig.bind_partial(*args, **kwargs)
 
+            created_sessions = []
+
             for param_name, param in sig.parameters.items():
                 if param_name not in bound_args.arguments:
                     if param.annotation is not inspect.Parameter.empty:
-                        bound_args.arguments[param_name] = self.resolve(param.annotation)
-            return func(**bound_args.arguments)
+                        resolved_obj = self.resolve(param.annotation)
+                        bound_args.arguments[param_name] = resolved_obj
+
+                        if isinstance(resolved_obj, Session):
+                            created_sessions.append(resolved_obj)
+
+            try:
+                result = func(**bound_args.arguments)
+                for s in created_sessions:
+                    s.commit()
+                return result
+            except Exception:
+                for s in created_sessions:
+                    s.rollback()
+                raise
+            finally:
+                for s in created_sessions:
+                    s.close()
+                return func(**bound_args.arguments)
         return wrap
 
 
 def configure_container(container: Container) -> None:
-    from datasource.repository.in_memory_storage import InMemoryStorage
-    from datasource.repository.game_repository_impl import GameRepository
-    from domain.service.game_service_impl import GameService
-    from domain.service.bot.minimax_bot_strategy import BotStrategy_MinMax
-    from domain.interfaces import IGameRepository, IBotStrategy
-    from domain.service.game_service_interface import GameServiceABC
+    from datasource import InMemoryStorage
+    from datasource import GameRepository
+    from domain import GameService
+    from domain import BotStrategy_MinMax
+    from domain import IGameRepository, IBotStrategy
+    from domain import GameServiceABC
 
     container.register(InMemoryStorage, scope=Scope.SINGLETON)
     container.register(IGameRepository, GameRepository, scope=Scope.SINGLETON)
