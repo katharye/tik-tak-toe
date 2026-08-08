@@ -21,8 +21,6 @@ class GameRepository(IGameRepository):
         
 
     def get(self, game_id: str | UUID) -> Game | None:
-        game_id = str(game_id)
-
         with SessionLocal() as session:
             entity = session.get(GameEntity, str(game_id))
         if entity is not None:
