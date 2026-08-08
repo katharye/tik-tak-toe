@@ -7,4 +7,5 @@ class PlayerEntity(Base):
     __tablename__ = "player"
 
     player_id: Mapped[str] = mapped_column(String(36), unique=True, index=True, primary_key=True)
+    player_login: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     player_password: Mapped[str] = mapped_column(String(64), unique=False)
