@@ -1,10 +1,13 @@
 from flask import Flask
 
+from datasource.db import Base, engine
 from di import Container, configure_container
 from domain import GameServiceABC
 from web.route.game_route import create_game_blueprint
 
 def create_app():
+    Base.metadata.create_all(bind=engine)
+
     cn = Container()
     configure_container(cn)
 
