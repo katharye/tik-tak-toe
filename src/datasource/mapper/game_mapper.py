@@ -10,7 +10,7 @@ class DatasourceGameMapper:
     def to_domain(cls, entity: GameEntity) -> Game:
             return Game(
                 game_id=UUID(entity.game_id), 
-                board=entity.board
+                board=Board(entity.board)
             )
 
     @classmethod
