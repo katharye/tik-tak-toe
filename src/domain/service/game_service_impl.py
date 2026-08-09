@@ -1,37 +1,107 @@
 # domain/service/game_service_impl.py
-from domain.service.game_service_interface import GameServiceABC
-from domain.model import Game, Board, Side
+from typing import Optional
+from uuid import UUID
+
+from domain.service.game_service_interface import IGameService
+from domain.model import Game, Board, Side, GameType, GameState
 
 from domain.interfaces import IGameRepository, IBotStrategy 
 
-class GameService(GameServiceABC):
+class GameService(IGameService):
     def __init__(self, repository: IGameRepository, bot_strategy: IBotStrategy):
         self.repository = repository
         self.bot_strategy = bot_strategy
 
-    def validate_field(self, game: Game) -> bool:
-        old_game = self.repository.get(game_id=game.uuid) 
-        if old_game is None:
-            player_steps = sum(row.count(Side.PLAYER) for row in game.board.values)
-            machine_steps = sum(row.count(Side.MACHINE) for row in game.board.values)
-            # Новая игра: либо пустое поле, либо один ход игрока
-            return machine_steps == 0 and player_steps in (0, 1)
 
-        steps = 0
-        for i in range(3):
-            for j in range(3):
-                old_val = old_game.board[i][j]
-                new_val = game.board[i][j]
+    def create_game(self, player_id: UUID, game_type: GameType) -> Game: 
+        game = Game(
+            type=game_type,
+            state= GameState.WAITING if game_type == GameType.VSPLAYER else GameState.TURN_X,
+            player_x_id=player_id,
+            current_turn_id=player_id
+        )
+        self.repository.save(game)
+        return game
+        
+    def join_game(self, game_id: UUID, player_id: UUID) -> Optional[Game]: 
+        game = self.repository.get(game_id)
+        if game is None:
+            return None
 
-                if old_val != new_val and old_val != Side.CLEAR:
-                    return False
+        if game.state != GameState.WAITING or game.type != GameType.VSPLAYER:
+            return None
 
-                if old_val != new_val:
-                    if new_val != Side.PLAYER:  
-                      return False
-                    steps += 1
-                
-        return steps == 1
+        if player_id == game.player_x_id:
+            return None
+
+        game.player_o_id = player_id
+        game.state = GameState.TURN_X
+
+        self.repository.save(game)
+
+        return game
+
+    def get_available_games(self) -> list[Game]: 
+        return self.repository.get_available()
+       
+    def make_move(self, game_id: UUID, player_id: UUID, row: int, col: int) -> Optional[Game]: 
+        game = self.get_game(game_id)
+        if game is None or player_id != game.current_turn_id:
+            return None
+
+        if player_id != game.player_o_id and player_id != game.player_x_id:
+            return None
+
+        side = Side.X if player_id == game.player_x_id else Side.O
+
+        if game.board[row][col] != Side.CLEAR:
+            return None
+        
+        game.board[row][col] = side
+
+        is_over, winner = self.check_game_finish(game.board)
+        if is_over:
+            match winner:
+                case Side.X:
+                    game.state=GameState.WIN_X
+                case Side.O:
+                    game.state=GameState.WIN_O
+                case Side.CLEAR:
+                    game.state=GameState.DRAW
+
+            self.repository.save(game)
+            return game
+
+        if game.type == GameType.VSBOT:
+            game.state = GameState.TURN_O
+            game = self.get_next_move(game)
+            
+            is_over, winner = self.check_game_finish(game.board)
+            if is_over:
+                match winner:
+                    case Side.X:
+                        game.state=GameState.WIN_X
+                    case Side.O:
+                        game.state=GameState.WIN_O
+                    case Side.CLEAR:
+                        game.state=GameState.DRAW
+
+                self.repository.save(game)
+                return game  
+
+            game.current_turn_id = game.player_x_id
+            game.state = GameState.TURN_X
+
+
+        elif game.type == GameType.VSPLAYER:
+            game.current_turn_id = game.player_x_id if game.player_o_id == game.current_turn_id else game.player_o_id
+            game.state = GameState.TURN_X if game.state == GameState.TURN_O else GameState.TURN_O
+
+        self.repository.save(game)
+        return game  
+        
+    def get_game(self, game_id: UUID) -> Optional[Game]:
+        return self.repository.get(game_id)
 
     @staticmethod
     def check_game_finish(board: Board) -> tuple[bool, int | None]:
@@ -63,7 +133,6 @@ class GameService(GameServiceABC):
             return game
         row, col = next_step
         next_step_game = game.copy()
-        next_step_game.board[row][col] = Side.MACHINE
+        next_step_game.board[row][col] = Side.O
 
-        self.repository.save(next_step_game)
         return next_step_game
