@@ -58,42 +58,24 @@ class Container:
 
             bound_args = sig.bind_partial(*args, **kwargs)
 
-            created_sessions = []
-
             for param_name, param in sig.parameters.items():
                 if param_name not in bound_args.arguments:
                     if param.annotation is not inspect.Parameter.empty:
-                        resolved_obj = self.resolve(param.annotation)
-                        bound_args.arguments[param_name] = resolved_obj
+                        bound_args.arguments[param_name] = self.resolve(param.annotation)
 
-                        if isinstance(resolved_obj, Session):
-                            created_sessions.append(resolved_obj)
-
-            try:
-                result = func(**bound_args.arguments)
-                for s in created_sessions:
-                    s.commit()
-                return result
-            except Exception:
-                for s in created_sessions:
-                    s.rollback()
-                raise
-            finally:
-                for s in created_sessions:
-                    s.close()
-                return func(**bound_args.arguments)
+            return func(**bound_args.arguments)
         return wrap
 
 
 def configure_container(container: Container) -> None:
-    from datasource import InMemoryStorage
-    from datasource import InMemoryGameRepository
-    from domain import GameService
-    from domain import BotStrategy_MinMax
-    from domain import IGameRepository, IBotStrategy
-    from domain import GameServiceABC
+    from datasource import GameRepository, PlayerRepository
+    from domain import IGameRepository, IPlayerRepository
+    from domain import AuthService, GameService, BotStrategy_MinMax
+    from domain import IAuthService, GameServiceABC, IBotStrategy
 
-    container.register(InMemoryStorage, scope=Scope.SINGLETON)
-    container.register(IGameRepository, InMemoryGameRepository, scope=Scope.SINGLETON)
+
+    container.register(IGameRepository, GameRepository, scope=Scope.SINGLETON)
     container.register(IBotStrategy, BotStrategy_MinMax, scope=Scope.SINGLETON)
     container.register(GameServiceABC, GameService, scope=Scope.SINGLETON)
+    container.register(IAuthService, AuthService, scope=Scope.SINGLETON)
+    container.register(IPlayerRepository, PlayerRepository, scope=Scope.SINGLETON)
