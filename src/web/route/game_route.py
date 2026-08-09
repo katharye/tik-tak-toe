@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 from flask.views import MethodView
 
 from domain import GameServiceABC, Side
-from web.mapper import WebMapper
+from web.mapper import WebGameMapper
 from web.model import GameDTO
 
 class GameRoute(MethodView):
@@ -30,7 +30,7 @@ class GameRoute(MethodView):
                 "error": "Invalid game UUID"
             }), 400
 
-        game = WebMapper.to_domain(game_dto)
+        game = WebGameMapper.to_domain(game_dto)
         if not self.game_service.validate_field(game):
             return jsonify ({
                 "error": "Invalid move: either previous moves were altered or more than one move was made"
