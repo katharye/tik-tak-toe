@@ -15,7 +15,8 @@ class PlayerRepository(IPlayerRepository):
             entity = DatasourcePlayerMapper.to_data(player)
             existing = session.get(PlayerEntity, str(player.player_id))
             if existing:
-                existing = entity
+                existing.player_login = entity.player_login
+                existing.player_password = entity.player_password
             else:
                 session.add(entity)
             session.commit()
