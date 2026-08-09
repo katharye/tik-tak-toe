@@ -1,2 +1,4 @@
 # web/mapper/__init__.py
-from web.mapper.dto_mapper import WebMapper
+from .game_mapper import WebGameMapper
+from .player_mapper import WebPlayerMapper
+from .request_mapper import WebSignUpRequestMapper
