@@ -5,7 +5,7 @@ from web.model import GameDTO, BoardDTO
 from typing import overload
 from uuid import UUID
 
-class WebMapper:
+class WebGameMapper:
 
     @overload
     @classmethod
