@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class PlayerDTO:
     id: str
     login: str
-    password: str
+    password: Optional[str] = None
 
     def to_dict(self) -> dict:
         return {
