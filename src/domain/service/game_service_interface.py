@@ -1,18 +1,31 @@
 # domain/service/game_service_interface.py
 from abc import ABC, abstractmethod
-from domain.model import Game, Board
+from uuid import UUID
+from typing import Optional
 
-class GameServiceABC(ABC):
+from domain.model import Game, Board, GameType
 
-    @abstractmethod
-    def get_next_move(self, game: Game) -> Game:
-        """Возвращает координаты (row, col) следующего хода ИИ (Minimax)."""
-        ...
+class IGameService(ABC):
 
     @abstractmethod
-    def validate_field(new_game: Game) -> bool:
-        """Проверяет валидность ходов (что не переписаны прошлые ходы и сделан ровно 1 ход)."""
-        ...
+    def create_game(self, player_id: UUID, game_type: GameType) -> Game: ...
+        
+    @abstractmethod
+    def join_game(self, game_id: UUID, player_id: UUID) -> Optional[Game]: ...
+    
+    @abstractmethod
+    def get_available_games(self) -> list[Game]: ...
+    
+        
+    @abstractmethod
+    def make_move(self, game_id: UUID, player_id: UUID, row: int, col: int) -> Optional[Game]: ...
+        
+    @abstractmethod
+    def get_game(self, game_id: UUID) -> Optional[Game]: ...
+
+
+    @abstractmethod
+    def get_next_move(self, game: Game) -> Game: ...
 
     @staticmethod
     @abstractmethod
