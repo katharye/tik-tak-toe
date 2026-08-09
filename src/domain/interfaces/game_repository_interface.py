@@ -11,3 +11,6 @@ class IGameRepository(ABC):
 
     @abstractmethod
     def get(self, game_id: str | UUID) -> Game | None: ...
+
+    @abstractmethod
+    def get_available(self) -> list[Game]: ...
