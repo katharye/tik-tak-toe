@@ -1,5 +1,5 @@
 # domain/model/side.py
 class Side:
-    PLAYER = 1
-    MACHINE = -1
+    X = 1
+    O = -1
     CLEAR = 0

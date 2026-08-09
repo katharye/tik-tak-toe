@@ -18,9 +18,9 @@ class BotStrategy_MinMax(IBotStrategy):
         win, winner = GameService.check_game_finish(board)
         if win:
             match winner:
-                case Side.PLAYER:
+                case Side.X:
                     return MinimaxScores.LOSS + depth
-                case Side.MACHINE:
+                case Side.O:
                     return MinimaxScores.WIN - depth
                 case Side.CLEAR:
                     return MinimaxScores.DRAW
@@ -31,7 +31,7 @@ class BotStrategy_MinMax(IBotStrategy):
             for x in range(3):
                 if board[y][x] == Side.CLEAR:
 
-                    board[y][x] = Side.MACHINE if bot_turn else Side.PLAYER
+                    board[y][x] = Side.O if bot_turn else Side.X
                     score = self._minimax(board, depth + 1, not(bot_turn))
                     board[y][x] = Side.CLEAR
 
@@ -51,7 +51,7 @@ class BotStrategy_MinMax(IBotStrategy):
             for x in range(3):
                 if board[y][x] == Side.CLEAR:
 
-                    board[y][x] = Side.MACHINE
+                    board[y][x] = Side.O
                     score = self._minimax(board, 0, bot_turn=False)
                     board[y][x] = Side.CLEAR
                     if score > best_score:
