@@ -1,74 +1,118 @@
 # web/route/game_route.py
-from flask import Blueprint, jsonify, request
+from flask import g, Blueprint, jsonify, request
 from flask.views import MethodView
 
-from domain import GameServiceABC, Side
+from typing import Optional
+from uuid import UUID
+
+from domain import IGameService, GameType
 from web.mapper import WebGameMapper
-from web.model import GameDTO
+from web.model import CreateGameRequestDTO, MoveRequestDTO
 
 class GameRoute(MethodView):
-    def __init__(self, game_service: GameServiceABC):
-        super().__init__()
+    def __init__(self, game_service: IGameService):
         self.game_service = game_service
 
-    def post(self, game_id: str):
-        data = request.get_json(silent=True)
-        
-        if not data or not isinstance(data, dict):
-            return jsonify({
-                "error": "Request body must be a valid JSON object"
-            }), 400
-        
-        game_dto = GameDTO.from_dict(data)
-        if not game_dto:
-            return jsonify({
-                "error": "Invalid game data format"
-            }), 400
+    def post(self, game_id: Optional[str] = None, action: Optional[str] = None):
 
-        if game_id != game_dto.game_id:
-            return jsonify({
-                "error": "Invalid game UUID"
-            }), 400
+        # POST /game — создание игры (action=None, game_id=None)
+        if game_id is None and action is None:
+            data = request.get_json(silent=True)
+            if not data or not isinstance(data, dict):
+                return jsonify({
+                    "error": "Request body must be a valid JSON object"
+                }), 400
 
-        game = WebGameMapper.to_domain(game_dto)
-        if not self.game_service.validate_field(game):
-            return jsonify ({
-                "error": "Invalid move: either previous moves were altered or more than one move was made"
-            }), 422
+            dto = CreateGameRequestDTO.from_dict(data)
+            if not dto:
+                return jsonify({
+                    "error": "Invalid game data format"
+                }), 400
 
-        is_over, winner = self.game_service.check_game_finish(game.board)
-        if is_over:
-            result = "draw" if winner == Side.CLEAR else ("player_wins" if winner == Side.PLAYER else "machine_wins")
-            return jsonify({
-                "game_id": str(game.uuid),
-                "board": [row.copy() for row in game.board.values],
-                "status": "finished",
-                "result": result
-            }), 200
-        
-        try:
-            updated_game = self.game_service.get_next_move(game)
-
-            is_over_after, winner_after = self.game_service.check_game_finish(updated_game.board)
-            response = {
-                "game_id": str(updated_game.uuid),
-                "board": [row.copy() for row in updated_game.board.values],
-                "status": "finished" if is_over_after else "ongoing"
-            }
-            if is_over_after:
-                response["result"] = "draw" if winner_after == Side.CLEAR else (
-                    "player_wins" if winner_after == Side.PLAYER else "machine_wins"
-                )
-
-            return jsonify(response), 200
+            player_id = g.current_user
+            game_type = GameType.VSBOT if dto.type == "BOT" else (GameType.VSPLAYER if dto.type == "PLAYER" else None)
+            if game_type is None:
+                return jsonify({
+                    "error": "Invalid game data format"
+                }), 400
+ 
             
-        except Exception as e:
-            return jsonify ({
-                "error": str(e)
-            }), 400
+            game = self.game_service.create_game(player_id, game_type=game_type)
+            return jsonify(WebGameMapper.to_web(game).to_dict()), 200
+
+
+        else:
+            try:
+                game_uuid = UUID(game_id) 
+            except (ValueError, TypeError):
+                return jsonify({"error": "bad request"}), 400
+            
+            game = self.game_service.get_game(game_uuid)
+            if game is None:
+                return jsonify({"error": "game not found"}), 404
+
+        # POST /game/<game_id>/join — присоединение (action="join")
+            if action == "join":
+                player_id = g.current_user
+
+                result = self.game_service.join_game(game_uuid, player_id)
+                if not result:
+                    return jsonify({"error": "Conflict"}), 409
+
+                return jsonify(WebGameMapper.to_web(result).to_dict())
+                
+        # POST /game/<game_id>/move — ход (action="move")
+            elif action == "move":
+                data = request.get_json(silent=True)
+                if not data or not isinstance(data, dict):
+                    return jsonify({
+                        "error": "Request body must be a valid JSON object"
+                    }), 400
+                
+                dto = MoveRequestDTO.from_dict(data)
+                if not dto:
+                    return jsonify({
+                        "error": "Invalid move data format"
+                    }), 400
+                
+                player_id = g.current_user
+
+                result = self.game_service.make_move(game_id=game_uuid, player_id=player_id, row=dto.row, col=dto.col)
+                if not result:
+                    return jsonify({"error": "Invalid move: either previous moves were altered or more than one move was made"}), 422
+
+                return jsonify(WebGameMapper.to_web(result).to_dict())
+
+            else:
+                return jsonify({"error": "page not found"}), 404
+
+    def get(self, game_id: Optional[str] = None):
+        # GET /game — список доступных игр (game_id=None)
+        if game_id is None:
+            games = self.game_service.get_available_games()
+            return jsonify([WebGameMapper.to_web(game).to_dict() for game in games]), 200
         
-def create_game_blueprint(game_service: GameServiceABC):
+        # GET /game/<game_id> — получить игру (game_id="...")
+        else:
+            try:
+                game_uuid = UUID(game_id) 
+            except (ValueError, TypeError):
+                return jsonify({"error": "bad request"}), 400
+
+            game = self.game_service.get_game(game_uuid)
+            if game is not None:
+                return jsonify(WebGameMapper.to_web(game).to_dict()), 200
+
+        return jsonify({"error": "page not found"}), 404
+
+
+     
+def create_game_blueprint(game_service: IGameService):
     bp = Blueprint('game', __name__, url_prefix='/game')
-    game_view = GameRoute.as_view('game_route', game_service=game_service)
-    bp.add_url_rule('/<game_id>', view_func=game_view, methods=['POST'])
+    view = GameRoute.as_view('game_route', game_service=game_service)
+
+    bp.add_url_rule('', view_func=view, methods=['GET', 'POST'])
+    bp.add_url_rule('/<game_id>', view_func=view, methods=['GET'])
+    bp.add_url_rule('/<game_id>/<action>', view_func=view, methods=['POST'])
+
     return bp
