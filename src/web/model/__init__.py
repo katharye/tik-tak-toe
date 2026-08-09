@@ -1,3 +1,5 @@
 # web/model/__init__.py
-from web.model.board_dto import BoardDTO
-from web.model.game_dto import GameDTO
+from .board_dto import BoardDTO
+from .game_dto import GameDTO
+from .player_dto import PlayerDTO
+from .signup_request_dto import SignUpRequestDTO
