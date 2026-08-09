@@ -3,3 +3,5 @@ from .board_dto import BoardDTO
 from .game_dto import GameDTO
 from .player_dto import PlayerDTO
 from .signup_request_dto import SignUpRequestDTO
+from .create_game_request_dto import CreateGameRequestDTO
+from .move_request_dto import MoveRequestDTO
