@@ -71,11 +71,11 @@ def configure_container(container: Container) -> None:
     from datasource import GameRepository, PlayerRepository
     from domain import IGameRepository, IPlayerRepository
     from domain import AuthService, GameService, BotStrategy_MinMax
-    from domain import IAuthService, GameServiceABC, IBotStrategy
+    from domain import IAuthService, IGameService, IBotStrategy
 
 
     container.register(IGameRepository, GameRepository, scope=Scope.SINGLETON)
     container.register(IBotStrategy, BotStrategy_MinMax, scope=Scope.SINGLETON)
-    container.register(GameServiceABC, GameService, scope=Scope.SINGLETON)
+    container.register(IGameService, GameService, scope=Scope.SINGLETON)
     container.register(IAuthService, AuthService, scope=Scope.SINGLETON)
     container.register(IPlayerRepository, PlayerRepository, scope=Scope.SINGLETON)
