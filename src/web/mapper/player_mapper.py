@@ -1,4 +1,3 @@
-# web/mapper/dto_mapper.py
 from domain import Player
 from web.model import PlayerDTO
 
@@ -11,7 +10,6 @@ class WebPlayerMapper:
         return PlayerDTO(
             id=str(domain.player_id),
             login=str(domain.login),
-            password=str(domain.password)
         )
 
     @classmethod

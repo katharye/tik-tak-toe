@@ -1,4 +1,3 @@
-# web/mapper/dto_mapper.py
 from domain import SignUpRequest
 from web.model import SignUpRequestDTO
 

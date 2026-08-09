@@ -28,7 +28,12 @@ class WebGameMapper:
         if isinstance(domain, Game):
             return GameDTO(
                 game_id=str(domain.uuid),
-                board=cls.to_web(domain.board)
+                board=cls.to_web(domain.board),
+                type=domain.type,
+                state=domain.state,
+                player_x_id=str(domain.player_x_id),
+                player_o_id=str(domain.player_o_id),
+                current_turn_id=str(domain.current_turn_id)
             )
         if isinstance(domain, Board):
             return BoardDTO(
@@ -42,7 +47,12 @@ class WebGameMapper:
         if isinstance(web, GameDTO):
             return Game(
                 game_id=UUID(web.game_id),
-                board=cls.to_domain(web.board)
+                board=cls.to_domain(web.board),
+                type=web.type,
+                state=web.state,
+                player_x_id=UUID(web.player_x_id),
+                player_o_id=UUID(web.player_o_id),
+                current_turn_id=UUID(web.current_turn_id)
             )   
         if isinstance(web, BoardDTO):
             return Board(
