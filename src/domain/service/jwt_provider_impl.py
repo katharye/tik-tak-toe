@@ -8,16 +8,13 @@ from .jwt_provider_interface import IJWTProvider
 
 class JWTProvider(IJWTProvider):
 
-    @classmethod
-    def geterate_access_token(user_id: UUID) -> str: 
+    def generate_access_token(self, user_id: UUID) -> str: 
         return create_access_token(identity=str(user_id))
 
-    @classmethod
-    def generate_refresh_token(user_id: UUID) -> str: 
+    def generate_refresh_token(self, user_id: UUID) -> str: 
         return create_refresh_token(identity=str(user_id))
 
-    @classmethod
-    def validate_access_token(token: str) -> bool: 
+    def validate_access_token(self, token: str) -> bool: 
         try:
             decoded_token = decode_token(token)
 
@@ -29,8 +26,7 @@ class JWTProvider(IJWTProvider):
         except Exception:
             return False
 
-    @classmethod
-    def validate_refresh_token(token: str) -> bool: 
+    def validate_refresh_token(self, token: str) -> bool: 
         try:
             decoded_token = decode_token(token)
 
@@ -42,8 +38,7 @@ class JWTProvider(IJWTProvider):
         except Exception:
             return False
 
-    @classmethod
-    def get_user_id(token: str) -> Optional[UUID]: 
+    def get_user_id(self, token: str) -> Optional[UUID]: 
         try:
             decoded_token = decode_token(token)
 
