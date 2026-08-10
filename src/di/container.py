@@ -70,8 +70,8 @@ class Container:
 def configure_container(container: Container) -> None:
     from datasource import GameRepository, PlayerRepository
     from domain import IGameRepository, IPlayerRepository
-    from domain import AuthService, GameService, BotStrategy_MinMax
-    from domain import IAuthService, IGameService, IBotStrategy
+    from domain import AuthService, GameService, BotStrategy_MinMax, JWTProvider
+    from domain import IAuthService, IGameService, IBotStrategy, IJWTProvider
 
 
     container.register(IGameRepository, GameRepository, scope=Scope.SINGLETON)
@@ -79,3 +79,5 @@ def configure_container(container: Container) -> None:
     container.register(IGameService, GameService, scope=Scope.SINGLETON)
     container.register(IAuthService, AuthService, scope=Scope.SINGLETON)
     container.register(IPlayerRepository, PlayerRepository, scope=Scope.SINGLETON)
+    container.register(IJWTProvider, JWTProvider, scope=Scope.SINGLETON)
+    
