@@ -7,5 +7,5 @@ from .create_game_request_dto import CreateGameRequestDTO
 from .move_request_dto import MoveRequestDTO
 
 from .jwt_request_dto import JWTRequestDTO
-from .jwt_response_dto import JWTResponceDTO
+from .jwt_response_dto import JWTResponseDTO
 from .refresh_jwt_request_dto import JWTRefreshRequestDTO
