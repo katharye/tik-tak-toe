@@ -1,15 +1,16 @@
 from domain.interfaces import IPlayerRepository
 from .auth_service_interface import IAuthService
 from .jwt_provider_interface import IJWTProvider
-from domain.model import Player, SignUpRequest, JWTResponce, JWTRequest
+from domain.model import Player, SignUpRequest, JWTResponse, JWTRequest
 
 
 from uuid import uuid4, UUID
 import hashlib
 
 class AuthService(IAuthService):
-    def __init__(self, player_repository: IPlayerRepository):
+    def __init__(self, player_repository: IPlayerRepository, jwt_provider: IJWTProvider):
         self.repository = player_repository
+        self.jwt_provider = jwt_provider
 
     def sign_up(self, request: SignUpRequest) -> bool: 
         existing = self.repository.get_by_login(request.login)
@@ -23,46 +24,48 @@ class AuthService(IAuthService):
         self.repository.save(new_player)
         return True
 
-    def sign_in(self, request: JWTRequest) -> JWTResponce: 
+    def sign_in(self, request: JWTRequest) -> JWTResponse: 
         existing = self.repository.get_by_login(request.login)
         if not existing:
-            return JWTResponce(type="access", access_token=None, refresh_token=None)
+            return JWTResponse(type="access", access_token=None, refresh_token=None)
 
         if not self._compare(db_password=existing.password, password=request.password):
-            return JWTResponce(type="access", access_token=None, refresh_token=None)
+            return JWTResponse(type="access", access_token=None, refresh_token=None)
 
         user_id = existing.player_id
-        token = IJWTProvider.geterate_access_token(user_id)
+        access_token = self.jwt_provider.generate_access_token(user_id)
+        refresh_token = self.jwt_provider.generate_refresh_token(user_id)
 
-
-        return JWTResponce(
+        return JWTResponse(
             type="access",
-            access_token=token,
-            refresh_token=None
+            access_token=access_token,
+            refresh_token=refresh_token
         )
 
-    def refresh_access(self, refresh_token: str) -> JWTResponce: 
-        if IJWTProvider.validate_refresh_token(refresh_token):
-            user_id = IJWTProvider.get_user_id(refresh_token)
+    def refresh_access(self, refresh_token: str) -> JWTResponse: 
+        if self.jwt_provider.validate_refresh_token(refresh_token):
+            user_id = self.jwt_provider.get_user_id(refresh_token)
             if user_id is None:
-                return JWTResponce(type="access", access_token=None, refresh_token=None)
+                return JWTResponse(type="access", access_token=None, refresh_token=None)
 
-            return JWTResponce(
+            return JWTResponse(
                 type="access",
-                access_token=None,
-                refresh_token=IJWTProvider.geterate_access_token(user_id)
+                access_token=self.jwt_provider.generate_access_token(user_id),
+                refresh_token=refresh_token
             )
+        return JWTResponse(type="access", access_token=None, refresh_token=None)
 
-    def refresh_refresh(self, refresh_token: str) -> JWTResponce: 
-        if IJWTProvider.validate_refresh_token(refresh_token):
-            user_id = IJWTProvider.get_user_id(refresh_token)
+    def refresh_refresh(self, refresh_token: str) -> JWTResponse: 
+        if self.jwt_provider.validate_refresh_token(refresh_token):
+            user_id = self.jwt_provider.get_user_id(refresh_token)
             if user_id is None:
-                return JWTResponce(type="refresh", access_token=None, refresh_token=None)
-            return JWTResponce(
+                return JWTResponse(type="refresh", access_token=None, refresh_token=None)
+            return JWTResponse(
                 type="refresh",
                 access_token=None,
-                refresh_token=IJWTProvider.generate_refresh_token(user_id)
+                refresh_token=self.jwt_provider.generate_refresh_token(user_id)
             )
+        return JWTResponse(type="refresh", access_token=None, refresh_token=None)
 
 
     def _hash(self, password: str) -> str:
