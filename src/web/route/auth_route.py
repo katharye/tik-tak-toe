@@ -1,18 +1,17 @@
 from flask import Blueprint, jsonify, request
 from flask.views import MethodView
-from base64 import b64decode 
 
 from domain import IAuthService
-from web.mapper import WebSignUpRequestMapper
-from web.model import SignUpRequestDTO
+from web.mapper import WebSignUpRequestMapper, WebJWTRequestMapper, WebJWTResponseMapper, WebJWTRefreshRequestMapper
+from web.model import SignUpRequestDTO, JWTRequestDTO, JWTRefreshRequestDTO
 
 class AuthRoute(MethodView):
     def __init__(self, auth_service: IAuthService):
         super().__init__()
         self.auth_service = auth_service
 
-    def post(self, auth_method: str):
-        if auth_method == "sign-up":
+    def post(self, method: str):
+        if method == "sign-up":
             data = request.get_json(silent=True)
             if not data or not isinstance(data, dict):
                 return jsonify({
@@ -35,31 +34,55 @@ class AuthRoute(MethodView):
 
             return jsonify({"success": True}), 200
         
-        elif auth_method == "sign-in":
-            header = request.headers.get("Authorization")
-            if header is None or not header.startswith("Basic "):
+        elif method == "sign-in":
+            data = request.get_json(silent=True)
+            if data is None:
                 return jsonify({
-                    "error": "Request header must be a valid object"
+                    "error": "Request body must be a valid object"
                 }), 400
 
-            bytes_encoded = header.replace("Basic ", "", 1)
-            decoded_str = b64decode(bytes_encoded).decode("utf-8")
 
-            if ":" not in decoded_str:
+            request_dto = JWTRequestDTO.from_dict(data)
+            if request_dto is None:
                 return jsonify({
-                    "error": "Invalid format"
+                    "error": "Invalid sign in request format"
                 }), 400
-            
-            login, password = decoded_str.split(":", 1)
 
-            result = self.auth_service.sign_in(login, password)
+            request = WebJWTRequestMapper.to_domain(request_dto)
 
-            if result is not None:
-                return jsonify({"user_id": str(result)}), 200
+            response = self.auth_service.sign_in(request)
+            if response.access_token is None:
+                return jsonify({"error": "Unauthorized"}), 401
 
-            return jsonify({
-                "error": "Unauthorized"
-            }), 401
+            response_dto = WebJWTResponseMapper.to_web(response)
+
+            return jsonify(response_dto.to_dict()), 200
+
+        elif method in ("refresh-access", "refresh-refresh"):
+            data = request.get_json(silent=True)
+            if not data or not isinstance(data, dict):
+                return jsonify({
+                    "error": "Request body must be a valid JSON object"
+                }), 400
+
+            refresh_request_dto = JWTRefreshRequestDTO.from_dict(data)
+            if refresh_request_dto is None:
+                return jsonify({"error": "Request body must be a valid JSON object"}), 400
+
+            refresh_request = WebJWTRefreshRequestMapper.to_domain(refresh_request_dto)
+            refresh_token = refresh_request.refresh_token
+
+            result = None
+            if method == "refresh-access":
+                result = self.auth_service.refresh_access(refresh_token=refresh_token)
+            elif method == "refresh-refresh":
+                result = self.auth_service.refresh_refresh(refresh_token=refresh_token)
+
+            response = WebJWTResponseMapper.to_web(result)
+            if response.access_token != None or response.refresh_token != None:
+                return jsonify(response.to_dict()), 200
+            else:
+                return jsonify({"error": "Unauthorized"}), 401  
             
         else:
             return jsonify({"error": "page not found"}), 404
@@ -68,6 +91,6 @@ def create_auth_blueprint(auth_service: IAuthService) -> Blueprint:
     bp = Blueprint('auth', __name__, url_prefix='/auth')
 
     auth_view = AuthRoute.as_view('auth_route', auth_service=auth_service)
-    bp.add_url_rule('/<auth_method>', view_func=auth_view, methods=['POST'])
+    bp.add_url_rule('/<method>', view_func=auth_view, methods=['POST'])
 
     return bp
