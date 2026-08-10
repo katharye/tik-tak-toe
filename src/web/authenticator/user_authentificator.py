@@ -1,28 +1,24 @@
 from flask import Flask, Blueprint, jsonify, request, g
 from uuid import UUID
 from typing import Optional
-from domain import IAuthService
+from domain import IJWTProvider
 
-from base64 import b64decode 
 
 
 class UserAuthenticator:
-    def __init__(self, auth_service: IAuthService):
-        self.auth_service = auth_service
+    def __init__(self, jwt_provider: IJWTProvider):
+        self.jwt_provider = jwt_provider
 
     def authenticate(self) -> tuple[bool, Optional[UUID]]:
         header = request.headers.get("Authorization")
-        if not header or not header.startswith("Basic "):
+        if not header or not header.startswith("Bearer "):
             return (False, None)
 
-        bytes_encoded = header.replace("Basic ", "", 1)
-        decoded_str = b64decode(bytes_encoded.encode("utf-8")).decode("utf-8")
-
-        login, password = decoded_str.split(":", 1)
-
-        result = self.auth_service.sign_in(login=login, password=password)
-        if result is not None:
-            return (True, result)
+        token = header.replace("Bearer ", "", 1)
+        if self.jwt_provider.validate_access_token(token):
+            user_id = self.jwt_provider.get_user_id(token)
+            return (True, user_id)
+        
         return (False, None)
 
     def register(self, app: Flask, exempt_blueprints: list[str]) -> None:

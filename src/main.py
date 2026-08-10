@@ -1,8 +1,9 @@
 from flask import Flask
+from flask_jwt_extended import JWTManager
 
 from datasource.db import Base, engine
 from di import Container, configure_container
-from domain import IGameService, IAuthService, IPlayerRepository
+from domain import IGameService, IJWTProvider, IPlayerRepository, IAuthService
 from web import create_game_blueprint, \
                 create_auth_blueprint, \
                 create_user_blueprint, \
@@ -17,6 +18,9 @@ def create_app():
 
     app = Flask(__name__)
 
+    jwt = JWTManager(app)
+    app.config["JWT_SECRET_KEY"] = "a3ws4e6d5cr7f6tg7ybwfe-98quehd9qpwdhjuqupcsq7c09wqd98ypr89y1r98ijhjk"
+
     game_service = cn.resolve(IGameService)
     game_bp = create_game_blueprint(game_service)
     app.register_blueprint(game_bp)
@@ -29,7 +33,8 @@ def create_app():
     user_bp = create_user_blueprint(player_repos)
     app.register_blueprint(user_bp)
 
-    authenticator = UserAuthenticator(auth_service)
+    jwt_provider = cn.resolve(IJWTProvider)
+    authenticator = UserAuthenticator(jwt_provider)
     authenticator.register(app, exempt_blueprints=["auth"])
     
 
