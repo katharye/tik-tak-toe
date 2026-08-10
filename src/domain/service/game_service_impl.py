@@ -3,7 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from domain.service.game_service_interface import IGameService
-from domain.model import Game, Board, Side, GameType, GameState
+from domain.model import Game, Board, Side, GameType, GameState, LiderBoardProfile
 
 from domain.interfaces import IGameRepository, IBotStrategy 
 
@@ -102,6 +102,13 @@ class GameService(IGameService):
         
     def get_game(self, game_id: UUID) -> Optional[Game]:
         return self.repository.get(game_id)
+
+    def get_leaderboard(self, limit: int) -> list[LiderBoardProfile]: 
+        return self.repository.get_leaderboard(limit)
+
+
+    def get_finished_games(self, player_id: UUID) -> list[Game]: 
+        return self.repository.get_finished_by_user(player_id)
 
     @staticmethod
     def check_game_finish(board: Board) -> tuple[bool, int | None]:

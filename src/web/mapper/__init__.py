@@ -5,3 +5,4 @@ from .request_mapper import WebSignUpRequestMapper
 from .jwt_request_mapper import WebJWTRequestMapper
 from .jwt_response_mapper import WebJWTResponseMapper
 from .refresh_jwt_request_mapper import WebJWTRefreshRequestMapper
+from .liderboard_profile_mapper import WebLiderBoardProfileMapper

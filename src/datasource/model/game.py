@@ -1,5 +1,6 @@
 from typing import List
-from sqlalchemy import String, Integer, ARRAY, DateTime
+from datetime import datetime
+from sqlalchemy import String, Integer, ARRAY, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 from datasource.db.base import Base
 
@@ -17,4 +18,4 @@ class GameEntity(Base):
     player_o_id:        Mapped[str] = mapped_column(String(36), index=True, nullable=True)
     current_turn_id: Mapped[str] = mapped_column(String(36), index=True, nullable=True)
 
-    # created_at: Mapped[DateTime] = mapped_column(DateTime)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

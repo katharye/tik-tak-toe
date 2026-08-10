@@ -1,6 +1,7 @@
 # domain/model/game.py
 from uuid import uuid4, UUID
 from typing import Optional, Self
+from datetime import datetime
 
 from domain.model.board import Board
 
@@ -16,6 +17,7 @@ class Game:
 
                  game_id: Optional[UUID] = None, 
                  board: Optional[Board] = None,
+                 created_at: Optional[datetime] = None
                  ):
         
         if game_id is None: 
@@ -35,6 +37,7 @@ class Game:
 
         self.type = type
         self.state = state
+        self.created_at = created_at
         
     def copy(self) -> Self:
         new = Game.__new__(Game)
@@ -45,4 +48,5 @@ class Game:
         new.player_o_id = self.player_o_id
         new.player_x_id = self.player_x_id
         new.current_turn_id = self.current_turn_id
+        new.created_at = self.created_at
         return new

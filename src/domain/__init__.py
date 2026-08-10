@@ -1,4 +1,4 @@
 # domain/__init__.py
-from domain.model import Game, Board, Side, Player, SignUpRequest, GameState, GameType, JWTRequest, JWTResponse, JWTRefreshRequest
+from domain.model import Game, Board, Side, Player, SignUpRequest, GameState, GameType, JWTRequest, JWTResponse, JWTRefreshRequest, LiderBoardProfile
 from domain.interfaces import IGameRepository, IBotStrategy, IPlayerRepository
 from domain.service import GameService, IGameService, BotStrategy_MinMax, AuthService, IAuthService, JWTProvider, IJWTProvider

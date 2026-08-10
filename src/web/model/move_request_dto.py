@@ -16,8 +16,14 @@ class MoveRequestDTO:
     def from_dict(cls, data: dict) -> Optional[Self]:
         row = data.get("row", None)
         col = data.get("col", None)
-        if None not in (row, col) and (0 <= row <= 2 and 0 <= col <= 2):
-            return MoveRequestDTO(row=int(row), col=int(col))    
+
+        try:
+            row_i = int(row)
+            col_i = int(col)
+        except (ValueError, TypeError):
+            return None
+        if 0 <= row_i <= 2 and 0 <= col_i <= 2:
+            return MoveRequestDTO(row=row_i, col=col_i)
 
         return None
         

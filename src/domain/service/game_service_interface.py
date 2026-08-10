@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID
 from typing import Optional
 
-from domain.model import Game, Board, GameType
+from domain.model import Game, Board, GameType, LiderBoardProfile
 
 class IGameService(ABC):
 
@@ -32,3 +32,9 @@ class IGameService(ABC):
     def check_game_finish(board: Board) -> tuple[bool, int | None]:
         """Возвращает (is_over, winner), где winner: Player(1), Machine(-1), Draw(0) или None."""
         ...
+
+    @abstractmethod 
+    def get_finished_games(self, player_id: UUID) -> list[Game]: ...
+
+    @abstractmethod
+    def get_leaderboard(self, limit: int) -> list[LiderBoardProfile]: ...

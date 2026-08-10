@@ -6,7 +6,7 @@ from typing import Optional
 from uuid import UUID
 
 from domain import IGameService, GameType
-from web.mapper import WebGameMapper
+from web.mapper import WebGameMapper, WebLiderBoardProfileMapper
 from web.model import CreateGameRequestDTO, MoveRequestDTO
 
 class GameRoute(MethodView):
@@ -86,12 +86,32 @@ class GameRoute(MethodView):
             else:
                 return jsonify({"error": "page not found"}), 404
 
-    def get(self, game_id: Optional[str] = None):
+    def get(self, game_id: Optional[str] = None, action: Optional[str] = None):
         # GET /game — список доступных игр (game_id=None)
-        if game_id is None:
+        if game_id is None and action is None:
             games = self.game_service.get_available_games()
             return jsonify([WebGameMapper.to_web(game).to_dict() for game in games]), 200
-        
+
+        # GET /game/<game_id> — получить историю игр (game_id="history")
+        elif game_id == "history" and action is None:
+            player_id = g.current_user
+            games = self.game_service.get_finished_games(player_id)
+            return jsonify([WebGameMapper.to_web(game).to_dict() for game in games]), 200
+
+        # GET /game/liderboard/<n> — таблица лидеров
+        elif game_id == 'liderboard' and action is not None and action.isdigit():
+            int_action = int(action)
+
+            if int_action <= 0: 
+                return jsonify({"error": "bad request"}), 400
+             
+            liderboards = self.game_service.get_leaderboard(int_action)
+
+            return jsonify([
+                WebLiderBoardProfileMapper.to_web(liderboard).to_dict()
+                for liderboard in liderboards
+            ]), 200
+
         # GET /game/<game_id> — получить игру (game_id="...")
         else:
             try:
@@ -113,6 +133,6 @@ def create_game_blueprint(game_service: IGameService):
 
     bp.add_url_rule('', view_func=view, methods=['GET', 'POST'])
     bp.add_url_rule('/<game_id>', view_func=view, methods=['GET'])
-    bp.add_url_rule('/<game_id>/<action>', view_func=view, methods=['POST'])
+    bp.add_url_rule('/<game_id>/<action>', view_func=view, methods=['POST', 'GET'])
 
     return bp

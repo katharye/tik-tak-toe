@@ -9,3 +9,4 @@ from .move_request_dto import MoveRequestDTO
 from .jwt_request_dto import JWTRequestDTO
 from .jwt_response_dto import JWTResponseDTO
 from .refresh_jwt_request_dto import JWTRefreshRequestDTO
+from .liderboard_profile_dto import LiderBoardProfileDTO
