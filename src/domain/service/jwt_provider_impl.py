@@ -16,11 +16,7 @@ class JWTProvider(IJWTProvider):
 
     def validate_access_token(self, token: str) -> bool: 
         try:
-            decoded_token = decode_token(token)
-
-            if decoded_token.get("type", None) != "access":
-                return False
-
+            decode_token(token)
             return True
 
         except Exception:

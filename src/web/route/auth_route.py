@@ -36,7 +36,7 @@ class AuthRoute(MethodView):
         
         elif method == "sign-in":
             data = request.get_json(silent=True)
-            if data is None:
+            if data is None or not isinstance(data, dict):
                 return jsonify({
                     "error": "Request body must be a valid object"
                 }), 400
@@ -48,9 +48,9 @@ class AuthRoute(MethodView):
                     "error": "Invalid sign in request format"
                 }), 400
 
-            request = WebJWTRequestMapper.to_domain(request_dto)
+            request_domain = WebJWTRequestMapper.to_domain(request_dto)
 
-            response = self.auth_service.sign_in(request)
+            response = self.auth_service.sign_in(request_domain)
             if response.access_token is None:
                 return jsonify({"error": "Unauthorized"}), 401
 

@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import String, Integer, ARRAY
+from sqlalchemy import String, Integer, ARRAY, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from datasource.db.base import Base
 
@@ -16,3 +16,5 @@ class GameEntity(Base):
     player_x_id:        Mapped[str] = mapped_column(String(36), index=True, nullable=True)
     player_o_id:        Mapped[str] = mapped_column(String(36), index=True, nullable=True)
     current_turn_id: Mapped[str] = mapped_column(String(36), index=True, nullable=True)
+
+    # created_at: Mapped[DateTime] = mapped_column(DateTime)
