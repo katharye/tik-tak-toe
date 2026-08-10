@@ -1,6 +1,8 @@
 from domain.interfaces import IPlayerRepository
-from domain.service.auth_service_interface import IAuthService
-from domain.model import Player, SignUpRequest
+from .auth_service_interface import IAuthService
+from .jwt_provider_interface import IJWTProvider
+from domain.model import Player, SignUpRequest, JWTResponce, JWTRequest
+
 
 from uuid import uuid4, UUID
 import hashlib
@@ -21,15 +23,46 @@ class AuthService(IAuthService):
         self.repository.save(new_player)
         return True
 
-    def sign_in(self, login: str, password: str) -> UUID | None:
-        existing = self.repository.get_by_login(login)
+    def sign_in(self, request: JWTRequest) -> JWTResponce: 
+        existing = self.repository.get_by_login(request.login)
         if not existing:
-            return None
+            return JWTResponce(type="access", access_token=None, refresh_token=None)
 
-        if not self._compare(db_password=existing.password, password=password):
-            return None
+        if not self._compare(db_password=existing.password, password=request.password):
+            return JWTResponce(type="access", access_token=None, refresh_token=None)
 
-        return existing.player_id
+        user_id = existing.player_id
+        token = IJWTProvider.geterate_access_token(user_id)
+
+
+        return JWTResponce(
+            type="access",
+            access_token=token,
+            refresh_token=None
+        )
+
+    def refresh_access(self, refresh_token: str) -> JWTResponce: 
+        if IJWTProvider.validate_refresh_token(refresh_token):
+            user_id = IJWTProvider.get_user_id(refresh_token)
+            if user_id is None:
+                return JWTResponce(type="access", access_token=None, refresh_token=None)
+
+            return JWTResponce(
+                type="access",
+                access_token=None,
+                refresh_token=IJWTProvider.geterate_access_token(user_id)
+            )
+
+    def refresh_refresh(self, refresh_token: str) -> JWTResponce: 
+        if IJWTProvider.validate_refresh_token(refresh_token):
+            user_id = IJWTProvider.get_user_id(refresh_token)
+            if user_id is None:
+                return JWTResponce(type="refresh", access_token=None, refresh_token=None)
+            return JWTResponce(
+                type="refresh",
+                access_token=None,
+                refresh_token=IJWTProvider.generate_refresh_token(user_id)
+            )
 
 
     def _hash(self, password: str) -> str:
