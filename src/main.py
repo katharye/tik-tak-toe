@@ -1,4 +1,4 @@
-from flask import Flask
+zfrom flask import Flask
 from flask_jwt_extended import JWTManager
 
 from datasource.db import Base, engine

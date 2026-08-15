@@ -46,7 +46,7 @@ class GameService(IGameService):
        
     def make_move(self, game_id: UUID, player_id: UUID, row: int, col: int) -> Optional[Game]: 
         game = self.get_game(game_id)
-        if game is None or player_id != game.current_turn_id:
+        if game is None or player_id != game.current_turn_id or game.state == GameState.WAITING:
             return None
 
         if player_id != game.player_o_id and player_id != game.player_x_id:

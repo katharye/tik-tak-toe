@@ -31,9 +31,9 @@ class WebGameMapper:
                 board=cls.to_web(domain.board),
                 type=domain.type,
                 state=domain.state,
-                player_x_id=str(domain.player_x_id),
-                player_o_id=str(domain.player_o_id),
-                current_turn_id=str(domain.current_turn_id)
+                player_x_id=str(domain.player_x_id) if domain.player_x_id is not None else None,
+                player_o_id=str(domain.player_o_id) if domain.player_o_id is not None else None,
+                current_turn_id=str(domain.current_turn_id) if domain.current_turn_id is not None else None
             )
         if isinstance(domain, Board):
             return BoardDTO(
